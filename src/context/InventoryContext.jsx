@@ -118,68 +118,53 @@ export const InventoryProvider = ({ children }) => {
     ];
 
     useEffect(() => {
-        let productsInitialLoaded = false;
-        let moviesInitialLoaded = false;
-        let maintenanceDone = false;
+        let unsubscribeProducts = () => { };
+        let unsubscribeMovies = () => { };
+        let productsResolved = false;
+        let moviesResolved = false;
 
-        const checkReady = (pLoaded, mLoaded) => {
-            if (pLoaded && mLoaded) {
-                setLoading(false);
-            }
+        const checkReady = (p, m) => {
+            if (p && m) setLoading(false);
         };
 
-        // 1. Real-time Products (Immediate Start)
-        const unsubscribeProducts = onSnapshot(query(collection(db, 'products')), (snapshot) => {
+        // Instant Stream Start (No awaits)
+        unsubscribeProducts = onSnapshot(query(collection(db, 'products')), (snapshot) => {
             const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
             setProducts(data);
 
-            if (!productsInitialLoaded) {
-                productsInitialLoaded = true;
-                checkReady(productsInitialLoaded, moviesInitialLoaded);
-
-                // Background Seeding (Non-blocking)
-                if (data.length === 0) {
-                    defaultInventory.forEach(item => addProduct(item));
-                }
+            // Resolve loading immediately if we have data (even from cache)
+            if (!productsResolved && (data.length > 0 || !snapshot.metadata.hasPendingWrites)) {
+                productsResolved = true;
+                checkReady(productsResolved, moviesResolved);
             }
-        }, (error) => {
-            console.error("Products Stream Error:", error);
-            productsInitialLoaded = true;
-            checkReady(true, moviesInitialLoaded);
+
+            // Silent background seeding if empty
+            if (data.length === 0 && !snapshot.metadata.fromCache) {
+                defaultInventory.forEach(item => addProduct(item));
+            }
         });
 
-        // 2. Real-time Movies (Immediate Start)
-        const unsubscribeMovies = onSnapshot(query(collection(db, 'movies')), (snapshot) => {
+        unsubscribeMovies = onSnapshot(query(collection(db, 'movies')), (snapshot) => {
             const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
             setMovies(data);
 
-            if (!moviesInitialLoaded) {
-                moviesInitialLoaded = true;
-                checkReady(productsInitialLoaded, moviesInitialLoaded);
+            if (!moviesResolved && (data.length > 0 || !snapshot.metadata.hasPendingWrites)) {
+                moviesResolved = true;
+                checkReady(productsResolved, moviesResolved);
             }
 
-            // Background Maintenance (Non-blocking Sync)
-            if (!maintenanceDone) {
-                if (data.length > 0) {
-                    maintenanceDone = true;
-                    defaultMovies.forEach(defMovie => {
-                        const existing = data.find(m => m.name === defMovie.name);
-                        if (!existing) {
-                            addMovie(defMovie);
-                        } else if (existing.image?.startsWith('http') || existing.downloadLink720 === '#') {
-                            updateMovie(existing.id, defMovie);
-                        }
-                    });
-                } else if (snapshot.metadata.fromCache === false) {
-                    // Only seed if we are sure it's empty in cloud
-                    maintenanceDone = true;
-                    defaultMovies.forEach(defMovie => addMovie(defMovie));
-                }
+            // Silent maintenance
+            if (data.length > 0) {
+                defaultMovies.forEach(defMovie => {
+                    const existing = data.find(m => m.name === defMovie.name);
+                    if (!existing || existing.image?.startsWith('http') || existing.downloadLink720 === '#') {
+                        if (!existing) addMovie(defMovie);
+                        else updateMovie(existing.id, defMovie);
+                    }
+                });
+            } else if (!snapshot.metadata.fromCache) {
+                defaultMovies.forEach(item => addMovie(item));
             }
-        }, (error) => {
-            console.error("Movies Stream Error:", error);
-            moviesInitialLoaded = true;
-            setLoading(false);
         });
 
         return () => {

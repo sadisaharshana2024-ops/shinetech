@@ -18,16 +18,12 @@ const Loader = ({ onFinished, ready }) => {
                     return prev + 8; // Super fast climb
                 }
 
-                // At 90%+, check if we are ready OR timed out
+                // Instant reveal if ready
                 if (ready || elapsed > timeoutDuration) {
-                    const next = prev + 5;
-                    if (next >= 100) {
-                        clearInterval(timer);
-                        setIsComplete(true);
-                        setTimeout(onFinished, 150);
-                        return 100;
-                    }
-                    return next;
+                    clearInterval(timer);
+                    setIsComplete(true);
+                    setTimeout(onFinished, 50);
+                    return 100;
                 }
 
                 // If not ready and at 90%, enter "breathe" mode (crawl very slowly)
