@@ -10,8 +10,8 @@ import Dashboard from './pages/Dashboard';
 import Movies from './pages/Movies';
 
 import { CartProvider } from './context/CartContext';
-import { InventoryProvider, useInventory } from './context/InventoryContext';
-import Loader from './components/Loader';
+import { InventoryProvider } from './context/InventoryContext';
+import Navbar from './components/Navbar';
 import { AnimatePresence } from 'framer-motion';
 
 function App() {
