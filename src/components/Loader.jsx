@@ -7,15 +7,15 @@ const Loader = ({ onFinished, ready }) => {
 
     useEffect(() => {
         const startTime = Date.now();
-        const timeoutDuration = 3500; // 3.5s extreme safety
+        const timeoutDuration = 2000; // 2s Nitro safety
 
         const timer = setInterval(() => {
             setProgress((prev) => {
                 const elapsed = Date.now() - startTime;
 
-                // Normal progress up to 90% (800ms base duration)
+                // Nitro progress up to 90%
                 if (prev < 90) {
-                    return prev + 2.5;
+                    return prev + 8; // Super fast climb
                 }
 
                 // At 90%+, check if we are ready OR timed out
