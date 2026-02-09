@@ -7,14 +7,12 @@ import { useInventory } from '../context/InventoryContext';
 import Navbar from '../components/Navbar';
 import { formatPrice } from '../utils/formatUtils';
 
-const Shop = ({ initialView = 'home' }) => {
+const Shop = ({ currentView, setCurrentView, isCartOpen, setIsCartOpen }) => {
     const { addToCart, cartItems, removeFromCart, updateQuantity, cartTotal, cartCount, clearCart } = useCart();
     const { products, loading } = useInventory();
 
     const location = useLocation();
     const navigate = useNavigate();
-    const [isCartOpen, setIsCartOpen] = useState(false);
-    const [currentView, setCurrentView] = useState(initialView);
     const [searchQuery, setSearchQuery] = useState('');
     const [activeCategory, setActiveCategory] = useState('All');
     const categories = [
@@ -50,7 +48,7 @@ const Shop = ({ initialView = 'home' }) => {
             title: "Premium Protection",
             subtitle: "Luxury Leather Series.",
             description: "Experience the ultimate touch of class with our hand-crafted Italian leather cases.",
-            image: "https://images.unsplash.com/photo-1616348436168-de43ad0db179?q=80&w=1920",
+            image: "https://images.unsplash.com/photo-1616348436168-de43ad0db179?q=60&w=1200",
             accent: "var(--primary)"
         },
         {
@@ -58,7 +56,7 @@ const Shop = ({ initialView = 'home' }) => {
             title: "Charging Redefined",
             subtitle: "3-in-1 Wireless Hub.",
             description: "Power your ecosystem with our sleek, high-speed magnetic charging stations.",
-            image: "https://images.unsplash.com/photo-1615526675159-e248c3021d3f?q=80&w=1920",
+            image: "https://images.unsplash.com/photo-1615526675159-e248c3021d3f?q=60&w=1200",
             accent: "var(--accent)"
         },
         {
@@ -66,7 +64,7 @@ const Shop = ({ initialView = 'home' }) => {
             title: "Audio Perfection",
             subtitle: "Crystal Clear Acoustics.",
             description: "Immerse yourself in high-fidelity sound with our premium wireless earbud collection.",
-            image: "https://images.unsplash.com/photo-1590658268037-6bf12165a8df?q=80&w=1920",
+            image: "https://images.unsplash.com/photo-1590658268037-6bf12165a8df?q=60&w=1200",
             accent: "var(--primary-glow)"
         },
         {
@@ -74,7 +72,7 @@ const Shop = ({ initialView = 'home' }) => {
             title: "MagSafe Collection",
             subtitle: "Magnetic Elegance.",
             description: "Discover our full range of magnetic wallets, mounts, and accessories for the modern explorer.",
-            image: "https://images.unsplash.com/photo-1629131726692-1accd0c93ce0?q=80&w=1920",
+            image: "https://images.unsplash.com/photo-1629131726692-1accd0c93ce0?q=60&w=1200",
             accent: "var(--success)"
         }
     ];
@@ -119,7 +117,7 @@ const Shop = ({ initialView = 'home' }) => {
 
     return (
         <div style={{ background: 'var(--background)', color: 'white', minHeight: '100vh', position: 'relative' }}>
-            <Navbar onCartToggle={() => setIsCartOpen(true)} onViewChange={setCurrentView} currentView={currentView} />
+            {/* Navbar is now in App.jsx */}
 
             {/* Hero Carousel - Only on Home */}
             <AnimatePresence>
@@ -341,7 +339,18 @@ const Shop = ({ initialView = 'home' }) => {
                 </div>
 
                 <div className="product-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '2.5rem' }}>
-                    {displayProducts.map(product => (
+                    {loading && products.length === 0 ? (
+                        [...Array(8)].map((_, i) => (
+                            <div key={i} className="glass-card shimmer" style={{ height: '400px', display: 'flex', flexDirection: 'column' }}>
+                                <div style={{ height: '300px', background: 'rgba(255,255,255,0.05)' }} />
+                                <div style={{ padding: '1.5rem', flex: 1 }}>
+                                    <div style={{ height: '14px', width: '40%', background: 'rgba(255,255,255,0.05)', marginBottom: '10px' }} />
+                                    <div style={{ height: '18px', width: '80%', background: 'rgba(255,255,255,0.05)', marginBottom: '15px' }} />
+                                    <div style={{ height: '30px', width: '100%', background: 'rgba(255,255,255,0.05)' }} />
+                                </div>
+                            </div>
+                        ))
+                    ) : displayProducts.map(product => (
                         <motion.div
                             key={product.id}
                             whileHover={{ y: -10 }}

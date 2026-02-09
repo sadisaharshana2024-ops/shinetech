@@ -29,7 +29,6 @@ const Movies = () => {
 
     return (
         <div style={{ minHeight: '100vh', background: 'var(--background)', color: 'white', paddingTop: '6rem' }}>
-            <Navbar />
 
             {/* Hero Section */}
             <div style={{
@@ -99,7 +98,11 @@ const Movies = () => {
                     gap: '2.5rem'
                 }}>
                     <AnimatePresence mode='popLayout'>
-                        {filteredMovies.map((movie, index) => (
+                        {loading && movies.length === 0 ? (
+                            [...Array(8)].map((_, i) => (
+                                <div key={i} className="glass-card shimmer" style={{ height: '450px', background: 'rgba(255,255,255,0.05)' }} />
+                            ))
+                        ) : filteredMovies.map((movie, index) => (
                             <motion.div
                                 layout
                                 key={movie.id}

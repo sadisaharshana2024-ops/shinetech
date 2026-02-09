@@ -15,39 +15,33 @@ import Loader from './components/Loader';
 import { AnimatePresence } from 'framer-motion';
 
 function App() {
-  const { loading: dataLoading } = useInventory();
-  const [animationLoading, setAnimationLoading] = React.useState(true);
-
-  // The site is only ready when BOTH the animation completes AND the cloud data is synced
-  const isSplashVisible = animationLoading || dataLoading;
+  const [currentView, setCurrentView] = React.useState('home');
+  const [isCartOpen, setIsCartOpen] = React.useState(false);
 
   return (
-    <AnimatePresence mode="wait">
-      {isSplashVisible ? (
-        <Loader
-          key="loader"
-          ready={!dataLoading}
-          onFinished={() => setAnimationLoading(false)}
-        />
-      ) : (
-        <Router key="content">
-          <Routes>
-            {/* Public Routes */}
-            <Route path="/" element={<Shop />} />
-            <Route path="/movies" element={<Movies />} />
-            <Route path="/login" element={<Login />} />
+    <Router>
+      <Navbar
+        onViewChange={setCurrentView}
+        currentView={currentView}
+        onCartToggle={() => setIsCartOpen(true)}
+      />
+      <AnimatePresence mode="wait">
+        <Routes>
+          {/* Public Routes */}
+          <Route path="/" element={<Shop currentView={currentView} setCurrentView={setCurrentView} isCartOpen={isCartOpen} setIsCartOpen={setIsCartOpen} />} />
+          <Route path="/movies" element={<Movies />} />
+          <Route path="/login" element={<Login />} />
 
-            {/* Protected Admin Routes */}
-            <Route element={<ProtectedRoute />}>
-              <Route path="/dashboard" element={<Dashboard />} />
-            </Route>
+          {/* Protected Admin Routes */}
+          <Route element={<ProtectedRoute />}>
+            <Route path="/dashboard" element={<Dashboard />} />
+          </Route>
 
-            {/* Fallback */}
-            <Route path="*" element={<Shop />} />
-          </Routes>
-        </Router>
-      )}
-    </AnimatePresence>
+          {/* Fallback */}
+          <Route path="*" element={<Shop currentView={currentView} setCurrentView={setCurrentView} isCartOpen={isCartOpen} setIsCartOpen={setIsCartOpen} />} />
+        </Routes>
+      </AnimatePresence>
+    </Router>
   );
 }
 
